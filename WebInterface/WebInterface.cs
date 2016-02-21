@@ -50,6 +50,14 @@ namespace WebInterface
             actions["/download/remove"] = RemoveDownload;
             actions["/system/shutdown"] = SystemShutdown;
             actions["/updater/update"] = Update;
+            actions["/console/exec"] = ConsoleExec;
+        }
+
+        private object ConsoleExec(Dictionary<string, string> arg)
+        {
+            var console = InvokerDatabase.GetInvoker("consoleio");
+            var res = console.Invoke<string>("command", arg["cmd"]);
+            return res;
         }
 
         private object Update(Dictionary<string, string> arg)

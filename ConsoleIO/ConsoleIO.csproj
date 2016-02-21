@@ -16,7 +16,7 @@
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
-    <OutputPath>..\DownloadSystem\bin\Debug\addons\</OutputPath>
+    <OutputPath>..\AddonTester\bin\Debug\addons\</OutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
@@ -40,7 +40,11 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Addon.cs" />
+    <Compile Include="DefaultConsole.cs" />
+    <Compile Include="Invoker.cs" />
+    <Compile Include="MiniConsole.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="StringConsole.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\DarkLib\DarkLib\DarkLib.csproj">

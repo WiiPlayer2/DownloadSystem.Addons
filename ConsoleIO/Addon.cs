@@ -13,12 +13,15 @@ using Timer = System.Timers.Timer;
 namespace ConsoleIO
 {
     public class Addon : IDownloadsInterface, ISystemInterface, IDownloaderInterface, IAddonInterface,
-        IInvokerInterface
+        IInvokerInterface, IInvokable
     {
         private Timer refreshTimer;
         private Thread inputThread;
         private Mutex mutex;
-        private List<Tuple<Regex, Action<Match>>> actions;
+        private List<Tuple<Regex, Action<Match, MiniConsole>>> actions;
+
+        private Invoker invoker;
+        private DefaultConsole defaultConsole;
 
         public IDownloadsDatabase DownloadsDatabase { get; set; }
 
@@ -26,65 +29,209 @@ namespace ConsoleIO
         {
             mutex = new Mutex();
 
-            actions = new List<Tuple<Regex, Action<Match>>>();
-            actions.Add(new Tuple<Regex, Action<Match>>(
-                new Regex(@"^shutdown$"), Stop));
-            actions.Add(new Tuple<Regex, Action<Match>>(
-                new Regex(@"^d\.(?<downloader>\w+)\ (?<url>.+)\ (?<path>.+)$"), Download));
-            actions.Add(new Tuple<Regex, Action<Match>>(
-                new Regex(@"^downloads$"), m => PrintDownloadsInfo()));
-            actions.Add(new Tuple<Regex, Action<Match>>(
-                new Regex(@"^remove (?<id>-?\d+)$"), RemoveDownload));
-            actions.Add(new Tuple<Regex, Action<Match>>(
-                new Regex(@"^archive (?<id>-?\d+)$"), ArchiveDownload));
-            actions.Add(new Tuple<Regex, Action<Match>>(
-                new Regex(@"^addons$"), PrintAddonsInfo));
-            actions.Add(new Tuple<Regex, Action<Match>>(
-                new Regex(@"^follow (?<id>-?\d+)$"), FollowDownload));
-            actions.Add(new Tuple<Regex, Action<Match>>(
-                new Regex(@"^cls$"), m => Console.Clear()));
-            actions.Add(new Tuple<Regex, Action<Match>>(
-                new Regex(@"^files (?<id>-?\d+)$"), ShowDownloadFiles));
-            actions.Add(new Tuple<Regex, Action<Match>>(
-                new Regex(@"^update$"), UpdateSystem));
+            invoker = new Invoker(this);
+            defaultConsole = new DefaultConsole();
+
+            actions = new List<Tuple<Regex, Action<Match, MiniConsole>>>();
+            Register(@"^shutdown$", Stop);
+            Register(@"^d\.(?<downloader>\w+)\ (?<url>.+)\ (?<path>.+)$", Download);
+            Register(@"^downloads$", (m, c) => PrintDownloadsInfo(c));
+            Register(@"^remove (?<id>-?\d+)$", RemoveDownload);
+            Register(@"^archive (?<id>-?\d+)$", ArchiveDownload);
+            Register(@"^addons$", PrintAddonsInfo);
+            Register(@"^follow (?<id>-?\d+)$", FollowDownload);
+            Register(@"^cls$", (m, c) => c.Clear());
+            Register(@"^files (?<id>-?\d+)$", ShowDownloadFiles);
+            Register(@"^update$", UpdateSystem);
+            Register(@"^(?<addon>(\?|\w+))\.(\?|(?<method>\w+)(\ (?<argument>[^\ \n]+))*)$",
+                InvokeAddonMethod);
         }
 
-        private void UpdateSystem(Match obj)
+        private void InvokeAddonMethod(Match obj, MiniConsole console)
         {
-            Console.WriteLine("Looking for update...");
+            var addonName = obj.Groups["addon"].Value;
+            if (addonName == "?")
+            {
+                var addons = InvokerDatabase.GetInvokers();
+
+                var fHead = "{0,-50} {1,-20}";
+                var fItem = "{0,-50} {1,-20}";
+                var fLine = "----------------------------------------------------------------";
+
+                console.WriteLine(fHead, "Full Name", "Name");
+                console.WriteLine(fLine);
+                foreach (var a in addons)
+                {
+                    console.WriteLine(fItem, a.Invokable.FullName, a.Invokable.Name);
+                }
+            }
+            else
+            {
+                var addon = InvokerDatabase.GetInvoker(addonName);
+                var method = obj.Groups["method"];
+                if (method.Success)
+                {
+                    var args = obj.Groups["argument"];
+                    var param = GetParamValues(addon.GetParameterTypes(method.Value),
+                        args.Captures.Cast<Capture>().Select(o => o.Value).ToArray());
+                    var ret = addon.Invoke(method.Value, param);
+                    console.WriteLine(ret);
+                }
+                else
+                {
+                    foreach (var k in addon.Methods)
+                    {
+                        console.WriteLine(GetInvokeMethodSignature(addon, k));
+                    }
+                }
+            }
+        }
+
+        private object[] GetParamValues(Type[] types, string[] values)
+        {
+            return types
+                .Zip(values, (t, v) => GetParamValue(t, v))
+                .ToArray();
+        }
+
+        private object GetParamValue(Type type, string value)
+        {
+            if (type == typeof(bool))
+            {
+                return bool.Parse(value);
+            }
+            else if (type == typeof(sbyte))
+            {
+                return sbyte.Parse(value);
+            }
+            else if (type == typeof(short))
+            {
+                return ushort.Parse(value);
+            }
+            else if (type == typeof(int))
+            {
+                return int.Parse(value);
+            }
+            else if (type == typeof(long))
+            {
+                return long.Parse(value);
+            }
+            else if (type == typeof(byte))
+            {
+                return byte.Parse(value);
+            }
+            else if (type == typeof(ushort))
+            {
+                return ushort.Parse(value);
+            }
+            else if (type == typeof(uint))
+            {
+                return uint.Parse(value);
+            }
+            else if (type == typeof(ulong))
+            {
+                return ulong.Parse(value);
+            }
+            else if (type == typeof(float))
+            {
+                return float.Parse(value);
+            }
+            else if (type == typeof(double))
+            {
+                return double.Parse(value);
+            }
+            else if (type == typeof(string))
+            {
+                return value;
+            }
+            throw new NotSupportedException(string.Format("{0} is not supported.", type.FullName));
+        }
+
+        private string GetInvokeMethodSignature(IInvoker invoker, string name)
+        {
+            var retType = invoker.GetReturnType(name);
+            var param = invoker.GetParameterTypes(name);
+            var ret = string.Format("{0}{1}({2})",
+                retType == typeof(void) ? "" : string.Format("{0} ", GetTypeName(retType)), name,
+                string.Join(", ", param.Select(o => GetTypeName(o))));
+            return ret;
+        }
+
+        private string GetTypeName(Type t)
+        {
+            var name = t.FullName;
+            switch (name)
+            {
+                case "System.Boolean":
+                    return "bool";
+                case "System.SByte":
+                    return "sbyte";
+                case "System.Int16":
+                    return "short";
+                case "System.Int32":
+                    return "int";
+                case "System.Int64":
+                    return "long";
+                case "System.Byte":
+                    return "byte";
+                case "System.UInt16":
+                    return "ushort";
+                case "System.UInt32":
+                    return "uint";
+                case "System.UInt64":
+                    return "ulong";
+                case "System.Single":
+                    return "float";
+                case "System.Double":
+                    return "double";
+                case "System.String":
+                    return "string";
+                default:
+                    return name;
+            }
+        }
+
+        private void Register(string regex, Action<Match, MiniConsole> action)
+        {
+            actions.Add(new Tuple<Regex, Action<Match, MiniConsole>>(new Regex(regex), action));
+        }
+
+        private void UpdateSystem(Match obj, MiniConsole console)
+        {
+            console.WriteLine("Looking for update...");
 
             var updater = InvokerDatabase.GetInvoker("updater");
             var res = updater.Invoke<bool>("update");
 
-            if(res)
+            if (res)
             {
-                Console.WriteLine("Update found and downloaded.");
+                console.WriteLine("Update found and downloaded.");
             }
             else
             {
-                Console.WriteLine("No update found.");
+                console.WriteLine("No update found.");
             }
         }
 
-        private void ShowDownloadFiles(Match obj)
+        private void ShowDownloadFiles(Match obj, MiniConsole console)
         {
             var id = int.Parse(obj.Groups["id"].Value);
             var down = DownloadsDatabase.GetDownload(id);
             foreach (var f in down.Files)
             {
-                Console.WriteLine(f);
+                console.WriteLine(f);
             }
         }
 
-        private void FollowDownload(Match obj)
+        private void FollowDownload(Match obj, MiniConsole console)
         {
             var id = int.Parse(obj.Groups["id"].Value);
             var d = DownloadsDatabase.GetDownload(id);
             var pmutex = new Mutex();
 
-            var line = Console.CursorTop;
-            Console.WriteLine("{0,-50} [----------]", d.Name);
-            Console.WriteLine("ETA: {0,19} | Speed: {1,10}/s | Size: {2,10}",
+            var line = console.CursorTop;
+            console.WriteLine("{0,-50} [----------]", d.Name);
+            console.WriteLine("ETA: {0,19} | Speed: {1,10}/s | Size: {2,10}",
                 "N/A", ((long)d.DownloadSpeed).ToReadableByteSize(),
                 d.Size.ToReadableByteSize());
 
@@ -97,34 +244,34 @@ namespace ConsoleIO
                         var progress = (int)(down.Progress * 10);
                         var eta = CalcETA(down);
 
-                        Console.CursorTop = line;
-                        Console.CursorLeft = 52;
+                        console.CursorTop = line;
+                        console.CursorLeft = 52;
                         for (var i = 0; i < 10; i++)
                         {
                             if (i < progress)
                             {
-                                Console.Write("#");
+                                console.Write("#");
                             }
                             else if (i == progress)
                             {
-                                Console.Write(">");
+                                console.Write(">");
                             }
                             else
                             {
-                                Console.Write("-");
+                                console.Write("-");
                             }
                         }
 
-                        Console.CursorTop = line + 1;
-                        Console.CursorLeft = 5;
-                        Console.Write("{0,19}", eta.HasValue ? eta.ToString() : "N/A");
-                        Console.CursorLeft = 34;
-                        Console.Write("{0,10}", ((long)down.DownloadSpeed).ToReadableByteSize());
+                        console.CursorTop = line + 1;
+                        console.CursorLeft = 5;
+                        console.Write("{0,19}", eta.HasValue ? eta.ToString() : "N/A");
+                        console.CursorLeft = 34;
+                        console.Write("{0,10}", ((long)down.DownloadSpeed).ToReadableByteSize());
                     }
-                    catch(ArgumentOutOfRangeException e)
+                    catch (ArgumentOutOfRangeException e)
                     {
-                        Console.WriteLine("Top: {0}; Left: {1}; Line: {2}",
-                            Console.CursorTop, Console.CursorLeft, line);
+                        console.WriteLine("Top: {0}; Left: {1}; Line: {2}",
+                            console.CursorTop, console.CursorLeft, line);
                         throw e;
                     }
 
@@ -137,13 +284,13 @@ namespace ConsoleIO
             update(d);
             d.DownloadProgressUpdated += tmpEvent;
 
-            Console.ReadKey(true);
+            console.ReadKey(true);
 
             d.DownloadProgressUpdated -= tmpEvent;
 
             pmutex.WaitOne();
-            Console.CursorTop = line + 2;
-            Console.CursorLeft = 0;
+            console.CursorTop = line + 2;
+            console.CursorLeft = 0;
             pmutex.ReleaseMutex();
         }
 
@@ -164,40 +311,40 @@ namespace ConsoleIO
             return eta;
         }
 
-        private void PrintAddonsInfo(Match obj)
+        private void PrintAddonsInfo(Match obj, MiniConsole console)
         {
             var fHead = "{0,-50} {1,-20}";
             var fItem = "{0,-50} {1,-20}";
             var fLine = "----------------------------------------------------------------";
 
-            Console.WriteLine(fHead, "Full Name", "Name");
-            Console.WriteLine(fLine);
+            console.WriteLine(fHead, "Full Name", "Name");
+            console.WriteLine(fLine);
             foreach (var a in AddonDatabse.GetAddons())
             {
-                Console.WriteLine(fItem, a.FullName, a.Name);
+                console.WriteLine(fItem, a.FullName, a.Name);
             }
         }
 
-        private void ArchiveDownload(Match obj)
+        private void ArchiveDownload(Match obj, MiniConsole console)
         {
             var d = DownloadsDatabase.GetDownload(int.Parse(obj.Groups["id"].Value));
             DownloadsDatabase.UnregisterDownload(d, false);
         }
 
-        private void RemoveDownload(Match obj)
+        private void RemoveDownload(Match obj, MiniConsole console)
         {
             var d = DownloadsDatabase.GetDownload(int.Parse(obj.Groups["id"].Value));
             DownloadsDatabase.UnregisterDownload(d, true);
         }
 
-        private void Download(Match obj)
+        private void Download(Match obj, MiniConsole console)
         {
             var down = DownloaderDatabase.GetDownloader(obj.Groups["downloader"].Value);
             var d = down.Download(obj.Groups["url"].Value, obj.Groups["path"].Value);
-            Console.WriteLine("Added Download: {0}", d);
+            console.WriteLine("Added Download: {0}", d);
         }
 
-        private void Stop(Match obj)
+        private void Stop(Match obj, MiniConsole console)
         {
             System.Shutdown();
         }
@@ -220,7 +367,7 @@ namespace ConsoleIO
                 while (result)
                 {
                     Console.Write("> ");
-                    result = InputHandle(Console.ReadLine());
+                    result = InputHandle(Console.ReadLine(), defaultConsole);
                 }
                 Console.WriteLine("Input deactivated!");
             }));
@@ -228,7 +375,14 @@ namespace ConsoleIO
             inputThread.Start();
         }
 
-        private bool InputHandle(string input)
+        public string InvokeCommand(string command)
+        {
+            var console = new StringConsole();
+            InputHandle(command, console);
+            return console.Output;
+        }
+
+        private bool InputHandle(string input, MiniConsole console)
         {
             if (input == null)
             {
@@ -242,17 +396,17 @@ namespace ConsoleIO
                     var m = t.Item1.Match(input);
                     if (m.Success)
                     {
-                        t.Item2(m);
+                        t.Item2(m, console);
                         return true;
                     }
                 }
 
-                Console.WriteLine("Unknown command");
+                console.WriteLine("Unknown command");
             }
             catch (Exception e)
             {
-                Console.WriteLine("Error while excecuting command");
-                Console.WriteLine(e);
+                console.WriteLine("Error while excecuting command");
+                console.WriteLine(e);
             }
             return true;
         }
@@ -261,7 +415,7 @@ namespace ConsoleIO
         {
             refreshTimer.Stop();
 
-            PrintDownloadsInfo();
+            PrintDownloadsInfo(defaultConsole);
 
             refreshTimer.Start();
         }
@@ -269,25 +423,25 @@ namespace ConsoleIO
         void DownloadsDatabase_DownloadRemoved(IDownload download)
         {
             //Console.WriteLine("DownloadRemoved({0})", download);
-            PrintDownloadsInfo();
+            PrintDownloadsInfo(defaultConsole);
         }
 
         void download_DownloadStatusChanged(IDownload download, DownloadStatus oldState, DownloadStatus newState)
         {
             //Console.WriteLine("DownloadStatusChanged({0}, {1}, {2})", download, oldState, newState);
-            PrintDownloadsInfo();
+            PrintDownloadsInfo(defaultConsole);
         }
 
         void DownloadsDatabase_DownloadAdded(IDownload download)
         {
             //Console.WriteLine("DownloadAdded({0})", download);
-            PrintDownloadsInfo();
+            PrintDownloadsInfo(defaultConsole);
 
             download.DownloadStatusChanged += download_DownloadStatusChanged;
             download.DownloadProgressUpdated += download_DownloadProgressUpdated;
         }
 
-        private void PrintDownloadsInfo()
+        private void PrintDownloadsInfo(MiniConsole console)
         {
             mutex.WaitOne();
 
@@ -295,12 +449,12 @@ namespace ConsoleIO
             var f = "{3,4} {0,-50} {1,11} {2,7:0.##}%";
 
             //Console.Clear();
-            Console.WriteLine(fHead, "Name", "State", "Progress", "ID");
-            Console.WriteLine("----------------------------------------------------------------------------");
+            console.WriteLine(fHead, "Name", "State", "Progress", "ID");
+            console.WriteLine("----------------------------------------------------------------------------");
 
             foreach (var d in DownloadsDatabase.GetDownloads())
             {
-                Console.WriteLine(f, Trunc(d.Name, 50), d.Status, d.Progress * 100, d.ID);
+                console.WriteLine(f, Trunc(d.Name, 50), d.Status, d.Progress * 100, d.ID);
             }
 
             mutex.ReleaseMutex();
@@ -337,5 +491,10 @@ namespace ConsoleIO
         public IAddonDatabase AddonDatabse { get; set; }
 
         public IInvokerDatabase InvokerDatabase { get; set; }
+
+        public IInvoker Invoker
+        {
+            get { return invoker; }
+        }
     }
 }

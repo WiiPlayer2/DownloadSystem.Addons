@@ -16,7 +16,7 @@
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
-    <OutputPath>..\DownloadSystem\bin\Debug\addons\</OutputPath>
+    <OutputPath>..\AddonTester\bin\Debug\addons\</OutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
@@ -49,6 +49,7 @@
     <Compile Include="TorrentDownload.cs" />
     <Compile Include="TorrentDownloader.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="TorrentInvoker.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\DownloadSystem\DownloadSystem.Shared\DownloadSystem.Shared.csproj">

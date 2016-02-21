@@ -19,10 +19,15 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DarkLib", "..\DarkLib\DarkL
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NyaaTools", "..\NyaaTools\NyaaTools\NyaaTools.csproj", "{1FAFA3DC-6882-437F-AA04-B9BE38FC9315}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PushbulletNotifier", "PushbulletNotifier\PushbulletNotifier.csproj", "{F37D9E27-9E5F-49E8-929D-8C3FFE32DFE9}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IgnoreCertificates", "IgnoreCertificates\IgnoreCertificates.csproj", "{82CEF0DB-1A8C-49D8-984B-A9E5F2793C8D}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DownloadSystem", "..\DownloadSystem\DownloadSystem\DownloadSystem.csproj", "{43F2A0D4-7889-4247-9373-C05115EB0A76}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AddonTester", "AddonTester\AddonTester.csproj", "{22B8DED2-8722-4223-936E-5AD76E2131DA}"
+EndProject
 Global
-	GlobalSection(CodealikeProperties) = postSolution
-		SolutionGuid = a173fcab-7677-4222-a944-013291a0d873
-	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
 		Debug|x86 = Debug|x86
@@ -80,8 +85,35 @@ Global
 		{1FAFA3DC-6882-437F-AA04-B9BE38FC9315}.Release|Any CPU.Build.0 = Release|Any CPU
 		{1FAFA3DC-6882-437F-AA04-B9BE38FC9315}.Release|x86.ActiveCfg = Release|x86
 		{1FAFA3DC-6882-437F-AA04-B9BE38FC9315}.Release|x86.Build.0 = Release|x86
+		{F37D9E27-9E5F-49E8-929D-8C3FFE32DFE9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F37D9E27-9E5F-49E8-929D-8C3FFE32DFE9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F37D9E27-9E5F-49E8-929D-8C3FFE32DFE9}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{F37D9E27-9E5F-49E8-929D-8C3FFE32DFE9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F37D9E27-9E5F-49E8-929D-8C3FFE32DFE9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F37D9E27-9E5F-49E8-929D-8C3FFE32DFE9}.Release|x86.ActiveCfg = Release|Any CPU
+		{82CEF0DB-1A8C-49D8-984B-A9E5F2793C8D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{82CEF0DB-1A8C-49D8-984B-A9E5F2793C8D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{82CEF0DB-1A8C-49D8-984B-A9E5F2793C8D}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{82CEF0DB-1A8C-49D8-984B-A9E5F2793C8D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{82CEF0DB-1A8C-49D8-984B-A9E5F2793C8D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{82CEF0DB-1A8C-49D8-984B-A9E5F2793C8D}.Release|x86.ActiveCfg = Release|Any CPU
+		{43F2A0D4-7889-4247-9373-C05115EB0A76}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{43F2A0D4-7889-4247-9373-C05115EB0A76}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{43F2A0D4-7889-4247-9373-C05115EB0A76}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{43F2A0D4-7889-4247-9373-C05115EB0A76}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{43F2A0D4-7889-4247-9373-C05115EB0A76}.Release|Any CPU.Build.0 = Release|Any CPU
+		{43F2A0D4-7889-4247-9373-C05115EB0A76}.Release|x86.ActiveCfg = Release|Any CPU
+		{22B8DED2-8722-4223-936E-5AD76E2131DA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{22B8DED2-8722-4223-936E-5AD76E2131DA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{22B8DED2-8722-4223-936E-5AD76E2131DA}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{22B8DED2-8722-4223-936E-5AD76E2131DA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{22B8DED2-8722-4223-936E-5AD76E2131DA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{22B8DED2-8722-4223-936E-5AD76E2131DA}.Release|x86.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(CodealikeProperties) = postSolution
+		SolutionGuid = a173fcab-7677-4222-a944-013291a0d873
 	EndGlobalSection
 EndGlobal

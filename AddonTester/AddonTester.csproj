@@ -4,24 +4,26 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{97356441-EAF4-4CC2-BB85-0CB422A46861}</ProjectGuid>
-    <OutputType>Library</OutputType>
+    <ProjectGuid>{22B8DED2-8722-4223-936E-5AD76E2131DA}</ProjectGuid>
+    <OutputType>Exe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>NyaaAnimeAdder</RootNamespace>
-    <AssemblyName>NyaaAnimeAdder</AssemblyName>
+    <RootNamespace>AddonTester</RootNamespace>
+    <AssemblyName>AddonTester</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
-    <OutputPath>..\AddonTester\bin\Debug\addons\</OutputPath>
+    <OutputPath>bin\Debug\</OutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
     <OutputPath>bin\Release\</OutputPath>
@@ -39,18 +41,16 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="NyaaAnimeAdder.cs" />
-    <Compile Include="NyaaAnimeConfigurator.cs" />
+    <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\DownloadSystem\DownloadSystem.Shared\DownloadSystem.Shared.csproj">
-      <Project>{C909D11C-06CF-4917-8D68-FA8584D767C2}</Project>
-      <Name>DownloadSystem.Shared</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\NyaaTools\NyaaTools\NyaaTools.csproj">
-      <Project>{1FAFA3DC-6882-437F-AA04-B9BE38FC9315}</Project>
-      <Name>NyaaTools</Name>
+    <None Include="App.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\DownloadSystem\DownloadSystem\DownloadSystem.csproj">
+      <Project>{43f2a0d4-7889-4247-9373-c05115eb0a76}</Project>
+      <Name>DownloadSystem</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

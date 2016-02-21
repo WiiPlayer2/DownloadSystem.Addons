@@ -13,13 +13,14 @@ using System.IO;
 
 namespace TorrentDownloader
 {
-    public class TorrentDownloader : IDownloader, IConfigurable
+    public class TorrentDownloader : IDownloader, IConfigurable, IInvokable
     {
         private Timer dhtTimer;
         private DhtListener listener;
         private DhtEngine dht;
         private List<IDownload> downloads;
         private TorrentConfigurator config;
+        private TorrentInvoker invoker;
 
         public TorrentDownloader()
         {
@@ -32,6 +33,7 @@ namespace TorrentDownloader
                 UseDht = true,
             };
             config = new TorrentConfigurator(this);
+            invoker = new TorrentInvoker(this);
         }
 
         public IDownload Download(string url, string path)
@@ -152,6 +154,11 @@ namespace TorrentDownloader
 
         public void Ready()
         {
+        }
+
+        public IInvoker Invoker
+        {
+            get { return invoker; }
         }
     }
 }

@@ -4,11 +4,11 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{97356441-EAF4-4CC2-BB85-0CB422A46861}</ProjectGuid>
+    <ProjectGuid>{F37D9E27-9E5F-49E8-929D-8C3FFE32DFE9}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>NyaaAnimeAdder</RootNamespace>
-    <AssemblyName>NyaaAnimeAdder</AssemblyName>
+    <RootNamespace>PushbulletNotifier</RootNamespace>
+    <AssemblyName>PushbulletNotifier</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>
@@ -30,6 +30,9 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="PushbulletSharp">
+      <HintPath>..\packages\PushBulletSharp.2.0.0\lib\portable-windows8+net45\PushbulletSharp.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
@@ -39,8 +42,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="NyaaAnimeAdder.cs" />
-    <Compile Include="NyaaAnimeConfigurator.cs" />
+    <Compile Include="Addon.cs" />
+    <Compile Include="Configurator.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -48,10 +51,9 @@
       <Project>{C909D11C-06CF-4917-8D68-FA8584D767C2}</Project>
       <Name>DownloadSystem.Shared</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\NyaaTools\NyaaTools\NyaaTools.csproj">
-      <Project>{1FAFA3DC-6882-437F-AA04-B9BE38FC9315}</Project>
-      <Name>NyaaTools</Name>
-    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
